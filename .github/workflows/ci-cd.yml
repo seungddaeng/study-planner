@@ -2,7 +2,7 @@ name: CI/CD Study Planner (Docker + EC2)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 env:
@@ -29,7 +29,8 @@ jobs:
       - name: Run tests
         env:
           FLASK_SECRET_KEY: test
-        run: pytest -q
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest -q
 
   build_and_push:
     runs-on: ubuntu-latest
@@ -90,15 +91,13 @@ jobs:
             sudo chown -R $USER:$USER /opt/study-planner
             cd /opt/study-planner
 
-            # Create/update .env on the server (secrets come from GitHub Actions)
             cat > .env <<EOF
             DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME}
             GEMINI_API_KEY=${GEMINI_API_KEY}
             FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-            GEMINI_MODEL=gemini-1.5-flash
+            GEMINI_MODEL=models/gemini-3-pro-preview
             EOF
 
-            # Login (helps with Docker Hub rate limits / private repos)
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker compose pull
